@@ -1,0 +1,223 @@
+{
+  "mappings": {
+    "Normal": {
+      "tactic_id": "TA0000",
+      "tactic_name": "Normal Operations",
+      "primary_technique_id": "T0000",
+      "primary_technique_name": "Baseline Business Traffic",
+      "description": "Legitimate enterprise network communications following expected statistical distributions.",
+      "soc_playbook": "Continue standard telemetry monitoring; no containment action required.",
+      "severity": "Informational",
+      "techniques": [
+        {
+          "id": "T0000.001",
+          "name": "Standard HTTP/HTTPS Traffic",
+          "description": "Routine web browsing and API interactions."
+        }
+      ]
+    },
+    "Reconnaissance": {
+      "tactic_id": "TA0043",
+      "tactic_name": "Reconnaissance",
+      "primary_technique_id": "T1046",
+      "primary_technique_name": "Network Service Discovery",
+      "description": "Adversary attempting to get a listing of services running on hosts across the network through port scanning, IP sweeps, or banner grabbing.",
+      "soc_playbook": "1. Temporarily rate-limit probe source IPs on perimeter firewall.\n2. Inspect ingress honeypots and verify no exposure of internal management ports (e.g. 22, 3389, 445).\n3. Alert SOC tier-1 to monitor downstream connection spikes from probing IPs.",
+      "severity": "Medium",
+      "techniques": [
+        {
+          "id": "T1046",
+          "name": "Network Service Discovery",
+          "description": "Active scanning of ports and IP ranges using SYN probes or banner grabs."
+        },
+        {
+          "id": "T1595",
+          "name": "Active Scanning",
+          "description": "Automated vulnerability scanning against external endpoints."
+        },
+        {
+          "id": "T1590",
+          "name": "Gather Victim Network Information",
+          "description": "Enumerating DNS, IP allocation, and routing infrastructure."
+        }
+      ]
+    },
+    "Initial Access": {
+      "tactic_id": "TA0001",
+      "tactic_name": "Initial Access",
+      "primary_technique_id": "T1190",
+      "primary_technique_name": "Exploit Public-Facing Application",
+      "description": "Adversary attempting to gain entry into the network using external web exploits, password spraying, or SSH/RDP credential brute forcing.",
+      "soc_playbook": "1. Enforce automatic IP blocklists on edge WAF / fail2ban for source endpoints.\n2. Invalidate compromised sessions and require multi-factor authentication re-auth.\n3. Snapshot victim service logs and verify process spawning integrity.",
+      "severity": "High",
+      "techniques": [
+        {
+          "id": "T1190",
+          "name": "Exploit Public-Facing Application",
+          "description": "Exploiting web server vulnerabilities (e.g., SQLi, Log4j, RCE)."
+        },
+        {
+          "id": "T1110",
+          "name": "Brute Force",
+          "description": "High-frequency password guessing against SSH, RDP, or HTTP login endpoints."
+        },
+        {
+          "id": "T1133",
+          "name": "External Remote Services",
+          "description": "Unauthorized access via unsegmented VPN or remote desktop gateways."
+        }
+      ]
+    },
+    "Execution": {
+      "tactic_id": "TA0002",
+      "tactic_name": "Execution",
+      "primary_technique_id": "T1059",
+      "primary_technique_name": "Command and Scripting Interpreter",
+      "description": "Adversary running malicious code, shells (PowerShell, Bash), or binary payloads on compromised host.",
+      "soc_playbook": "1. Isolate the compromised host endpoint from the VLAN via EDR network containment.\n2. Terminate rogue child processes spawned by web servers or database daemons.\n3. Collect memory dump and triage recent process injection artifacts.",
+      "severity": "High",
+      "techniques": [
+        {
+          "id": "T1059.001",
+          "name": "PowerShell",
+          "description": "Execution of obfuscated base64 commands and reflective DLL injection."
+        },
+        {
+          "id": "T1059.004",
+          "name": "Unix Shell",
+          "description": "Spawning /bin/sh or /bin/bash interactive reverse shells."
+        },
+        {
+          "id": "T1203",
+          "name": "Exploitation for Client Execution",
+          "description": "Triggering execution vulnerabilities in client software."
+        }
+      ]
+    },
+    "Persistence": {
+      "tactic_id": "TA0003",
+      "tactic_name": "Persistence",
+      "primary_technique_id": "T1053",
+      "primary_technique_name": "Scheduled Task/Job",
+      "description": "Adversary attempting to maintain access across reboots, credential changes, or session terminations.",
+      "soc_playbook": "1. Audit cron jobs, systemd timers, Windows Scheduled Tasks, and Registry run keys.\n2. Review recently provisioned local service accounts or SSH authorized_keys.\n3. Revoke newly created OAuth tokens or service principals.",
+      "severity": "High",
+      "techniques": [
+        {
+          "id": "T1053.005",
+          "name": "Scheduled Task",
+          "description": "Persistence established via schtasks or cron automation."
+        },
+        {
+          "id": "T1547.001",
+          "name": "Registry Run Keys / Startup Folder",
+          "description": "Auto-starting malware on system logon."
+        },
+        {
+          "id": "T1136",
+          "name": "Create Account",
+          "description": "Creation of rogue local administrator accounts for backdoors."
+        }
+      ]
+    },
+    "Privilege Escalation": {
+      "tactic_id": "TA0004",
+      "tactic_name": "Privilege Escalation",
+      "primary_technique_id": "T1068",
+      "primary_technique_name": "Exploitation for Privilege Escalation",
+      "description": "Adversary trying to gain higher-level permissions (e.g. SYSTEM, root, Domain Admin) on compromised host.",
+      "soc_playbook": "1. Audit local token manipulation, SeDebugPrivilege misuse, and kernel exploit signatures.\n2. Immediately reset Domain Admin and local administrator passwords from an out-of-band console.\n3. Restrict LSASS memory access via Credential Guard.",
+      "severity": "Critical",
+      "techniques": [
+        {
+          "id": "T1068",
+          "name": "Exploitation for Privilege Escalation",
+          "description": "Local kernel vulnerabilities (e.g. DirtyPipe, PrintNightmare) to elevate to root/SYSTEM."
+        },
+        {
+          "id": "T1548.002",
+          "name": "Bypass User Account Control (UAC)",
+          "description": "Bypassing Windows UAC to execute processes with elevated integrity."
+        }
+      ]
+    },
+    "Lateral Movement": {
+      "tactic_id": "TA0008",
+      "tactic_name": "Lateral Movement",
+      "primary_technique_id": "T1021",
+      "primary_technique_name": "Remote Services",
+      "description": "Adversary extending access across the internal network by pivoting to adjacent hosts via SMB, RPC, RDP, or SSH.",
+      "soc_playbook": "1. Implement micro-segmentation rules blocking inter-workstation SMB (445) and RPC (135).\n2. Isolate infected subnet segment at the top-of-rack switch level.\n3. Hunt for Pass-the-Hash / Kerberoasting authentication anomalies across domain controllers.",
+      "severity": "Critical",
+      "techniques": [
+        {
+          "id": "T1021.002",
+          "name": "SMB/Windows Admin Shares",
+          "description": "Spreading via PsExec or C$ admin share file transfers."
+        },
+        {
+          "id": "T1021.001",
+          "name": "Remote Desktop Protocol",
+          "description": "Interactive lateral movement using compromised administrator credentials."
+        },
+        {
+          "id": "T1550.002",
+          "name": "Pass the Hash",
+          "description": "Reusing NTLM password hashes across the subnet without cracking."
+        }
+      ]
+    },
+    "Command and Control": {
+      "tactic_id": "TA0011",
+      "tactic_name": "Command and Control",
+      "primary_technique_id": "T1071",
+      "primary_technique_name": "Application Layer Protocol",
+      "description": "Adversary establishing periodic beaconing and covert control channels to an external command server.",
+      "soc_playbook": "1. Blackhole destination C2 IP/FQDN across DNS sinkholes and edge egress firewalls.\n2. Block suspicious SSL/TLS certificates with self-signed or anomalous JA3 fingerprints.\n3. Capture full packet payload on the active C2 stream for IOC extraction.",
+      "severity": "Critical",
+      "techniques": [
+        {
+          "id": "T1071.001",
+          "name": "Web Protocols (HTTP/HTTPS)",
+          "description": "Periodic beaconing disguised as standard outbound TLS traffic."
+        },
+        {
+          "id": "T1071.004",
+          "name": "DNS Tunneling",
+          "description": "Encoding commands and telemetry within recursive DNS TXT queries."
+        },
+        {
+          "id": "T1573",
+          "name": "Encrypted Channel",
+          "description": "Custom symmetric encryption over raw TCP/UDP sockets."
+        }
+      ]
+    },
+    "Exfiltration": {
+      "tactic_id": "TA0010",
+      "tactic_name": "Exfiltration",
+      "primary_technique_id": "T1048",
+      "primary_technique_name": "Exfiltration Over Alternative Protocol",
+      "description": "Adversary stealing sensitive data, database dumps, or credentials and transmitting them off-network.",
+      "soc_playbook": "1. Immediately sever external outbound connections from the transmitting host.\n2. Enable DLP (Data Loss Prevention) containment on cloud egress gateways.\n3. Triage stolen file metadata to determine regulatory breach notification scope (GDPR/DPDP).",
+      "severity": "Critical",
+      "techniques": [
+        {
+          "id": "T1048.003",
+          "name": "Exfiltration Over Unencrypted/Encrypted Non-C2 Protocol",
+          "description": "Massive data transfer over SFTP, mega.nz, or AWS S3 buckets."
+        },
+        {
+          "id": "T1567",
+          "name": "Exfiltration Over Web Service",
+          "description": "Uploading archives to external cloud storage repositories."
+        },
+        {
+          "id": "T1020",
+          "name": "Automated Exfiltration",
+          "description": "Scheduled compression and staging of confidential data."
+        }
+      ]
+    }
+  }
+}
